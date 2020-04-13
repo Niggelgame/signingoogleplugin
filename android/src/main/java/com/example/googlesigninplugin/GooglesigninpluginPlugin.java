@@ -3,7 +3,6 @@ package com.example.googlesigninplugin;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.ConditionVariable;
 
 import androidx.annotation.NonNull;
 
@@ -20,7 +19,6 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BasicMessageChannel;
 import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -43,11 +41,7 @@ public class GooglesigninpluginPlugin implements FlutterPlugin, MethodCallHandle
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    //flutterPluginBinding.getFlutterEngine().
     onAttachedToEngine(flutterPluginBinding.getApplicationContext(), flutterPluginBinding.getBinaryMessenger());
-    //final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "googlesigninplugin");
-    //this.context = flutterPluginBinding.getApplicationContext();
-    //channel.setMethodCallHandler(new GooglesigninpluginPlugin());
   }
 
   public GooglesigninpluginPlugin(){
@@ -92,7 +86,7 @@ public class GooglesigninpluginPlugin implements FlutterPlugin, MethodCallHandle
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
     } else if(call.method.equals("signIn")) {
-      String clientID = call.argument("clientID");
+      String clientID = call.argument("clientIDAndroid");
       Log.w("%%%", clientID);
       // Configure sign-in to request the user's ID, email address, and basic
       // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
@@ -110,20 +104,8 @@ public class GooglesigninpluginPlugin implements FlutterPlugin, MethodCallHandle
 
   @Override
   public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-    System.out.println(this);
-    //super.onActivityResult(requestCode, resultCode, data);
-    channel.send("Should have logged");
-    Log.w("FLUTTTTTTAAA", "WARRRRRUUUUUUMMMM");
-    //resultI.success("RUN BABY");
-    // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
-    //if (requestCode == RC_SIGN_IN) {
-      // The Task returned from this call is always completed, no need to attach
-      // a listener.
-      Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-    channel.send("Should have worked");
-    //resultI.success("12345");
-      handleSignInResult(task);
-    //}
+    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+    handleSignInResult(task);
     return true;
   }
 
@@ -132,29 +114,20 @@ public class GooglesigninpluginPlugin implements FlutterPlugin, MethodCallHandle
     try {
       try {
         GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-        Log.w("%%%%%%%%%%%%%%%%", "getResult");
-        channel.send("Past get result");
 
         if (account == null) {
           this.result.error("shit", "fuck", null);
         } else {
-          channel.send("Past assertion");
-          channel.send(account.getIdToken());
           Log.w(TAG, "signInResult " + account.getIdToken());
           this.result.success(account.getIdToken());
         }
-
-        // Signed in successfully, show authenticated UI.
-        //updateUI(account);
       } catch (ApiException e) {
         channel.send("Past exception " + e.getStatusCode());
         // The ApiException status code indicates the detailed failure reason.
         // Please refer to the GoogleSignInStatusCodes class reference for more information.
         //e.printStackTrace();
-        //System.out.println(e.getMessage());
         Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
-        //updateUI(null);\
-        this.result.success("Hurra, ein Fehler");
+        this.result.error(String.valueOf(e.getStatusCode()), e.getMessage(), e);
       }
     } catch (Exception e){
       e.printStackTrace();
@@ -162,14 +135,7 @@ public class GooglesigninpluginPlugin implements FlutterPlugin, MethodCallHandle
   }
 
   private void signIn() {
-    //resultI.success("Run");
     Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-    //Intent i = new Intent(applicationContext, ActivityHandler.class);
-    //i.putExtra("intent", signInIntent);
-    //this.startActivity(i);
-    //Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(dataIntent);
-    //handleSignInResult(task);
-    //resultI.success("Sinnvolle Rueckgabe");
     activity.startActivityForResult(signInIntent, RC_SIGN_IN);
   }
 
@@ -178,7 +144,6 @@ public class GooglesigninpluginPlugin implements FlutterPlugin, MethodCallHandle
     System.out.println(this);
     this.activity = binding.getActivity();
     binding.addActivityResultListener(this);
-    //context = binding.getActivity().getApplicationContext();
   }
 
   @Override

@@ -58,10 +58,9 @@ class _MyAppState extends State<MyApp> {
                 onPressed: () async {
                   print('Test');
                   try {
-                    String token = await Googlesigninplugin.signIn(
-                        "1074291073899-cojr1b1ptd7fi6c78pim9tcj2tpefnv8.apps.googleusercontent.com");
+                    String clientToken = await Googlesigninplugin.signIn(clientIDAndroid: "1074291073899-rm0381fcsn9fbss5np1dvtvp8c0sqj4k.apps.googleusercontent.com", clientIDiOS: "1074291073899-gb9qk5rm8me3bp3b1subvct5lnadjr95.apps.googleusercontent.com");
                     print("Worked out!");
-                    print(token);
+                    print(clientToken);
                   } catch (error) {
                     print(error.toString());
                   }
